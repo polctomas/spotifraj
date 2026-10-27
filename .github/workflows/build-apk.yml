@@ -17,9 +17,20 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Pesničky do appky
+        run: |
+          mkdir -p www/songs
+          if [ -d songs ]; then cp -r songs/. www/songs/; fi
+          ls www/songs | wc -l
       - run: npm install
       - run: npx cap add android
       - run: npx cap sync android
+      - name: Natívne ovládanie prehrávania
+        run: |
+          D=android/app/src/main/java/sk/hudba/app
+          mkdir -p $D
+          cp native/*.java $D/
+          python3 native/patch_manifest.py
       - name: Ikona a farby
         run: |
           for d in android/app/src/main/res/mipmap-*dpi; do
