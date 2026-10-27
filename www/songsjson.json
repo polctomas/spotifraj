@@ -1,0 +1,247 @@
+[
+{
+"id": "b_s01",
+"title": "American Boy",
+"artist": "Estelle, Kanye West",
+"url": "songs/s01.mp3",
+"coverUrl": "covers/s01.jpg"
+},
+{
+"id": "b_s02",
+"title": "Ballin' (with Roddy Ricch)",
+"artist": "Mustard, Roddy Ricch",
+"url": "songs/s02.mp3",
+"coverUrl": "covers/s02.jpg"
+},
+{
+"id": "b_s03",
+"title": "Black Beatles",
+"artist": "Rae Sremmurd, Gucci Mane",
+"url": "songs/s03.mp3",
+"coverUrl": "covers/s03.jpg"
+},
+{
+"id": "b_s04",
+"title": "Borderline",
+"artist": "Tame Impala",
+"url": "songs/s04.mp3",
+"coverUrl": "covers/s04.jpg"
+},
+{
+"id": "b_s05",
+"title": "DARE (feat. Shaun Ryder & Roses Gabor)",
+"artist": "Gorillaz, Shaun Ryder, Roses Gabor",
+"url": "songs/s05.mp3",
+"coverUrl": "covers/s05.jpg"
+},
+{
+"id": "b_s06",
+"title": "Day N Nite",
+"artist": "Kid Cudi",
+"url": "songs/s06.mp3",
+"coverUrl": null
+},
+{
+"id": "b_s07",
+"title": "Doubt",
+"artist": "Twenty One Pilots",
+"url": "songs/s07.mp3",
+"coverUrl": "covers/s07.jpg"
+},
+{
+"id": "b_s08",
+"title": "Dracula",
+"artist": "Tame Impala",
+"url": "songs/s08.mp3",
+"coverUrl": "covers/s08.jpg"
+},
+{
+"id": "b_s09",
+"title": "Drowning (feat. Kodak Black)",
+"artist": "A Boogie Wit da Hoodie, Kodak Black",
+"url": "songs/s09.mp3",
+"coverUrl": "covers/s09.jpg"
+},
+{
+"id": "b_s10",
+"title": "Falling Down - Bonus Track",
+"artist": "Lil Peep, XXXTENTACION",
+"url": "songs/s10.mp3",
+"coverUrl": "covers/s10.jpg"
+},
+{
+"id": "b_s11",
+"title": "Feel Good Inc.",
+"artist": "Gorillaz, De La Soul",
+"url": "songs/s11.mp3",
+"coverUrl": "covers/s11.jpg"
+},
+{
+"id": "b_s12",
+"title": "Headlock",
+"artist": "Imogen Heap",
+"url": "songs/s12.mp3",
+"coverUrl": null
+},
+{
+"id": "b_s13",
+"title": "Heathens",
+"artist": "Twenty One Pilots",
+"url": "songs/s13.mp3",
+"coverUrl": "covers/s13.jpg"
+},
+{
+"id": "b_s14",
+"title": "Heavydirtysoul",
+"artist": "Twenty One Pilots",
+"url": "songs/s14.mp3",
+"coverUrl": null
+},
+{
+"id": "b_s15",
+"title": "In Da Club",
+"artist": "50 Cent",
+"url": "songs/s15.mp3",
+"coverUrl": "covers/s15.jpg"
+},
+{
+"id": "b_s16",
+"title": "It Was A Good Day",
+"artist": "Ice Cube",
+"url": "songs/s16.mp3",
+"coverUrl": "covers/s16.jpg"
+},
+{
+"id": "b_s17",
+"title": "It Wasn't Me",
+"artist": "Shaggy, Rik Rok",
+"url": "songs/s17.mp3",
+"coverUrl": "covers/s17.jpg"
+},
+{
+"id": "b_s18",
+"title": "L'amour Toujours",
+"artist": "GIGI D'AGOSTINO",
+"url": "songs/s18.mp3",
+"coverUrl": "covers/s18.jpg"
+},
+{
+"id": "b_s19",
+"title": "Lane Boy",
+"artist": "Twenty One Pilots",
+"url": "songs/s19.mp3",
+"coverUrl": null
+},
+{
+"id": "b_s20",
+"title": "Lemonade (feat. NAV)",
+"artist": "Internet Money, Gunna, Don Toliver, NAV",
+"url": "songs/s20.mp3",
+"coverUrl": "covers/s20.jpg"
+},
+{
+"id": "b_s21",
+"title": "Let It Happen",
+"artist": "Tame Impala",
+"url": "songs/s21.mp3",
+"coverUrl": null
+},
+{
+"id": "b_s22",
+"title": "Many Men (Wish Death)",
+"artist": "50 Cent",
+"url": "songs/s22.mp3",
+"coverUrl": "covers/s22.jpg"
+},
+{
+"id": "b_s23",
+"title": "Moonlight",
+"artist": "XXXTENTACION",
+"url": "songs/s23.mp3",
+"coverUrl": "covers/s23.jpg"
+},
+{
+"id": "b_s24",
+"title": "R n'B soul",
+"artist": "Horkýže Slíže",
+"url": "songs/s24.mp3",
+"coverUrl": "covers/s24.jpg"
+},
+{
+"id": "b_s25",
+"title": "Rhinestone Eyes",
+"artist": "Gorillaz",
+"url": "songs/s25.mp3",
+"coverUrl": "covers/s25.jpg"
+},
+{
+"id": "b_s26",
+"title": "Ride",
+"artist": "Twenty One Pilots",
+"url": "songs/s26.mp3",
+"coverUrl": "covers/s26.jpg"
+},
+{
+"id": "b_s27",
+"title": "Riders on the Storm",
+"artist": "The Doors",
+"url": "songs/s27.mp3",
+"coverUrl": "covers/s27.jpg"
+},
+{
+"id": "b_s28",
+"title": "RUBBERZ",
+"artist": "Fenix Flexin, Purps On The Beat",
+"url": "songs/s28.mp3",
+"coverUrl": "covers/s28.jpg"
+},
+{
+"id": "b_s29",
+"title": "Smack That",
+"artist": "Akon, Eminem",
+"url": "songs/s29.mp3",
+"coverUrl": "covers/s29.jpg"
+},
+{
+"id": "b_s30",
+"title": "Somebody's Watching Me",
+"artist": "Rockwell",
+"url": "songs/s30.mp3",
+"coverUrl": "covers/s30.jpg"
+},
+{
+"id": "b_s31",
+"title": "Still D.R.E.",
+"artist": "Dr. Dre, Snoop Dogg",
+"url": "songs/s31.mp3",
+"coverUrl": "covers/s31.jpg"
+},
+{
+"id": "b_s32",
+"title": "Stressed Out",
+"artist": "Twenty One Pilots",
+"url": "songs/s32.mp3",
+"coverUrl": "covers/s32.jpg"
+},
+{
+"id": "b_s33",
+"title": "The Box",
+"artist": "Roddy Ricch",
+"url": "songs/s33.mp3",
+"coverUrl": "covers/s33.jpg"
+},
+{
+"id": "b_s34",
+"title": "The Less I Know The Better",
+"artist": "Tame Impala",
+"url": "songs/s34.mp3",
+"coverUrl": "covers/s34.jpg"
+},
+{
+"id": "b_s35",
+"title": "What You Saying",
+"artist": "Lil Uzi Vert",
+"url": "songs/s35.mp3",
+"coverUrl": "covers/s35.jpg"
+}
+]
