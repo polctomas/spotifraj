@@ -82,7 +82,7 @@ input.big{height:10px;background:linear-gradient(90deg,var(--a1),var(--a2) var(-
 .wrap{position:relative;border-radius:16px;overflow:hidden;margin-bottom:4px;background:#3a1020}
 .wrap::before{content:"Odstrániť";position:absolute;left:18px;top:50%;transform:translateY(-50%);color:#ff7a90;font-weight:700;font-size:14px}
 .wrap .item{touch-action:pan-y;background:#10111c;position:relative}
-.wrap.drag{outline:2px solid var(--a1);z-index:3}
+.wrap{will-change:transform}.wrap.drag{outline:2px solid var(--a1);z-index:5;box-shadow:0 16px 36px #000d}
 .handle{touch-action:none}
 h3{font-size:13px;color:var(--mu);font-weight:600;margin:14px 4px 6px}
 .hint{color:var(--mu);font-size:12.5px;margin:0 4px 10px}
@@ -173,9 +173,9 @@ $('#file').onchange=async e=>{
     const t=await tags(f);let title=f.name.replace(/\.[^.]+$/,''),artist='';
     if(!t.title&&title.includes(' - ')){const k=title.indexOf(' - ');artist=title.slice(0,k);title=title.slice(k+3)}
     const s={id:Date.now()+Math.random().toString(36).slice(2),title:t.title||title,artist:t.artist||artist,cover:t.cover||null,blob:f};
-    await tx('readwrite',st=>st.put(s));lib.push(s);
+    await tx('readwrite',st=>st.put(s));usr.push(s);
   }
-  sortLib();toast(fl.length+(fl.length===1?' skladba pridaná':' skladieb pridaných'));e.target.value='';renderList();
+  toast(fl.length+(fl.length===1?' skladba pridaná':' skladieb pridaných'));e.target.value='';mergeLib();
 };
 const sortLib=()=>lib.sort((a,b)=>a.title.localeCompare(b.title,'sk'));
 /* ---------- knižnica ---------- */
@@ -195,8 +195,8 @@ $('#list').onclick=e=>{
   else{queue=view().map(s=>s.id);load(queue.indexOf(id));openPlayer()}
 };
 async function delSong(id){
-  if(!confirm('Zmazať skladbu z appky?'))return;
-  if(id.startsWith('b_')){const r=JSON.parse(localStorage.rm||'[]');r.push(id);localStorage.rm=JSON.stringify(r)}else await tx('readwrite',st=>st.delete(id));lib=lib.filter(s=>s.id!==id);
+  const hid=/^[bd]_/.test(id);if(!confirm(hid?'Skryť skladbu v appke? (súbor v telefóne ostane)':'Zmazať skladbu z appky?'))return;
+  if(hid){const r=JSON.parse(localStorage.rm||'[]');r.push(id);localStorage.rm=JSON.stringify(r)}else await tx('readwrite',st=>st.delete(id));lib=lib.filter(s=>s.id!==id);usr=usr.filter(s=>s.id!==id);
   const pl=queue[cur];queue=queue.filter(x=>x!==id);cur=queue.indexOf(pl);
   if(pl===id){au.pause();au.removeAttribute('src');$('#mini').style.display='none';cur=-1;if(playerOpen)history.back()}
   renderList();
@@ -205,7 +205,7 @@ async function delSong(id){
 function load(i,play=true){
   if(i<0||i>=queue.length)return;cur=i;const s=song(queue[i]);if(!s)return;
   const my=++loadId;au.volume=1;
-  (s.blob?Promise.resolve(s.blob):fetch(s.url).then(r=>r.blob())).then(b=>{if(my!==loadId)return;if(aurl)URL.revokeObjectURL(aurl);aurl=URL.createObjectURL(b);au.src=aurl;if(play)au.play().catch(()=>{})}).catch(()=>toast('Skladbu sa nepodarilo načítať'));
+  (s.blob?Promise.resolve(s.blob):fetch(s.url).then(r=>r.blob())).then(b=>{if(my!==loadId)return;if(aurl)URL.revokeObjectURL(aurl);aurl=URL.createObjectURL(b);au.src=aurl;if(play)au.play().catch(()=>{});if(s.dev&&!s.tried){s.tried=1;tags(b).then(t=>{if(t.cover){s.cover=t.cover;artC.delete(s.id);const x=bg(s);if(queue[cur]===s.id){for(const e of [$('#ma'),$('#pcov')]){e.style.background=x;e.textContent=''}renderList();syncMC()}}})}}).catch(()=>toast('Skladbu sa nepodarilo načítať'));
   $('#mini').style.display='flex';$('#mt').textContent=$('#pt').textContent=s.title;
   $('#ms').textContent=$('#pa').textContent=s.artist||'Neznámy interpret';
   for(const [e,t] of [[$('#ma'),'sm'],[$('#pcov'),'']]){e.style.background=bg(s);e.textContent=ini(s)}
@@ -232,9 +232,10 @@ async function art64(s){
 async function syncMC(){
   if(!MC||cur<0)return;const s=song(queue[cur]);if(!s)return;
   let a='';try{a=await art64(s)}catch(e){}
-  MC.update({title:s.title,artist:s.artist||'',playing:!au.paused,pos:au.currentTime||0,dur:isFinite(au.duration)?au.duration:0,art:a}).catch(()=>{});
+  MC.update({title:s.title,artist:s.artist||'',playing:!au.paused,pos:au.currentTime||0,dur:isFinite(au.duration)?au.duration:0,art:a}).catch(e=>{if(!syncMC.w){syncMC.w=1;toast('Ovládač: '+(e&&e.message||e))}});
 }
 if(MC)MC.addListener('action',e=>{const a=e.action;if(a==='play')au.play();else if(a==='pause')au.pause();else if(a==='next')next();else if(a==='prev')prev();else if(a==='seek')au.currentTime=e.pos/1000});
+window.hardBack=()=>{if(sheet){closeSheet();return true}if(playerOpen){history.back();return true}return false};
 au.onloadedmetadata=syncMC;au.onseeked=syncMC;
 const upPlay=()=>{const p=!au.paused;document.body.classList.toggle('on',p);$('#mp').innerHTML=ic(p?'pause':'play',26);$('#pplay').innerHTML=ic(p?'pause':'play',38);syncMC()};
 au.onplay=au.onpause=upPlay;upPlay();
@@ -307,24 +308,56 @@ function drawQueue(){
   document.querySelectorAll('.wrap').forEach(setupRow);
 }
 function setupRow(w){
-  const sg=w.firstElementChild,h=w.querySelector('.handle');let x0=0,dx=0,sw=false;
+  const sg=w.firstElementChild,h=w.querySelector('.handle');let x0=0,dx=0,sw=false,y0=0,drag=false;
   sg.onpointerdown=e=>{if(h.contains(e.target))return;x0=e.clientX;dx=0;sw=true;sg.setPointerCapture(e.pointerId);sg.style.transition='none'};
   sg.onpointermove=e=>{if(!sw)return;dx=Math.max(0,e.clientX-x0);sg.style.transform=`translateX(${dx}px)`};
   const end=()=>{if(!sw)return;sw=false;sg.style.transition='transform .22s';
-    if(dx>100){sg.style.transform='translateX(110%)';setTimeout(()=>{const i=queue.indexOf(w.dataset.id,cur+1);if(i>-1)queue.splice(i,1);toast('Odstránené z radu');drawQueue()},200)}else sg.style.transform=''};
+    if(dx>100){sg.style.transform='translateX(110%)';
+      setTimeout(()=>{w.style.transition='height .22s,margin .22s,opacity .22s';w.style.height=w.offsetHeight+'px';w.getBoundingClientRect();w.style.height='0';w.style.marginBottom='0';w.style.opacity='0';
+        setTimeout(()=>{const i=queue.indexOf(w.dataset.id,cur+1);if(i>-1)queue.splice(i,1);toast('Odstránené z radu');drawQueue()},230)},170)}
+    else sg.style.transform=''};
   sg.onpointerup=sg.onpointercancel=end;
   sg.onclick=e=>{if(h.contains(e.target)||dx>8)return;const i=queue.indexOf(w.dataset.id,cur+1);if(i>-1)load(i)};
-  h.onpointerdown=e=>{e.preventDefault();h.setPointerCapture(e.pointerId);w.classList.add('drag')};
-  h.onpointermove=e=>{if(!w.classList.contains('drag'))return;const l=w.parentNode,pv=w.previousElementSibling,nx=w.nextElementSibling;
-    if(pv){const r=pv.getBoundingClientRect();if(e.clientY<r.top+r.height/2)l.insertBefore(w,pv)}
-    if(nx){const r=nx.getBoundingClientRect();if(e.clientY>r.top+r.height/2)l.insertBefore(nx,w)}};
-  h.onpointerup=h.onpointercancel=()=>{w.classList.remove('drag');queue=queue.slice(0,cur+1).concat([...w.parentNode.children].map(c=>c.dataset.id))};
+  h.onpointerdown=e=>{e.preventDefault();h.setPointerCapture(e.pointerId);drag=true;y0=e.clientY;w.style.transition='none';w.classList.add('drag');w.style.transform='scale(1.03)';if(navigator.vibrate)navigator.vibrate(12)};
+  h.onpointermove=e=>{if(!drag)return;const l=w.parentNode;
+    const swap=(sib,before)=>{const a=w.getBoundingClientRect().top,t0=sib.getBoundingClientRect().top;
+      if(before)l.insertBefore(w,sib);else l.insertBefore(sib,w);
+      y0+=w.getBoundingClientRect().top-a;
+      const t1=sib.getBoundingClientRect().top;
+      sib.style.transition='none';sib.style.transform=`translateY(${t0-t1}px)`;sib.getBoundingClientRect();
+      sib.style.transition='transform .26s cubic-bezier(.2,.8,.2,1)';sib.style.transform=''};
+    const r=w.getBoundingClientRect(),c=r.top+r.height/2,pv=w.previousElementSibling,nx=w.nextElementSibling;
+    if(pv){const q=pv.getBoundingClientRect();if(c<q.top+q.height/2)swap(pv,true)}
+    if(nx&&w.nextElementSibling===nx){const q=nx.getBoundingClientRect();if(c>q.top+q.height/2)swap(nx,false)}
+    w.style.transform=`translateY(${e.clientY-y0}px) scale(1.03)`};
+  h.onpointerup=h.onpointercancel=()=>{if(!drag)return;drag=false;
+    w.style.transition='transform .24s cubic-bezier(.2,.8,.2,1)';w.style.transform='';
+    setTimeout(()=>{w.classList.remove('drag');w.style.transition=''},250);
+    queue=queue.slice(0,cur+1).concat([...w.parentNode.children].map(c=>c.dataset.id))};
 }
 /* ---------- štart ---------- */
+let bund=[],usr=[],devS=[],devKnown=null,permTries=0;
+const nk=s=>(s.title||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function mergeLib(){
+  const rm=JSON.parse(localStorage.rm||'[]'),bk=new Set(bund.map(nk));
+  lib=[...bund.filter(x=>!rm.includes(x.id)),...devS.filter(d=>{const k=nk(d);return !rm.includes(d.id)&&!(k&&bk.has(k))}),...usr];
+  sortLib();renderList();
+}
+async function scanDev(){
+  if(!MC||!MC.scan)return;
+  try{
+    const r=await MC.scan();
+    devS=(r.songs||[]).map(d=>({id:'d_'+d.id,title:(d.title||'').trim()||d.path.split('/').pop().replace(/\.[^.]+$/,''),artist:/unknown/i.test(d.artist||'')?'':(d.artist||''),url:location.origin+'/_capacitor_file_'+d.path.split('/').map(encodeURIComponent).join('/'),coverUrl:null,dev:true}));
+    const ids=new Set(devS.map(x=>x.id));
+    if(devKnown&&[...ids].some(i=>!devKnown.has(i)))toast('Nová skladba z telefónu pridaná');
+    devKnown=ids;permTries=99;mergeLib();
+  }catch(e){if(permTries++<8)setTimeout(scanDev,4000)}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)scanDev()});
 (async()=>{
-  const u=await tx('readonly',s=>s.getAll())||[];let b=[];
-  try{const rm=JSON.parse(localStorage.rm||'[]');b=(await(await fetch('songs.json')).json()).filter(x=>!rm.includes(x.id))}catch(e){}
-  lib=b.concat(u);sortLib();renderList();
+  usr=await tx('readonly',s=>s.getAll())||[];
+  try{bund=await(await fetch('songs.json')).json()}catch(e){}
+  mergeLib();scanDev();
 })();
 renderList();setP(sk);
 </script>
