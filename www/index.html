@@ -83,7 +83,7 @@ input.big{height:10px;background:linear-gradient(90deg,var(--a1),var(--a2) var(-
 .wrap::before{content:"Odstrániť";position:absolute;left:18px;top:50%;transform:translateY(-50%);color:#ff7a90;font-weight:700;font-size:14px}
 .wrap .item{touch-action:pan-y;background:#10111c;position:relative}
 .wrap{will-change:transform}.wrap.drag{outline:2px solid var(--a1);z-index:5;box-shadow:0 16px 36px #000d}
-.handle{touch-action:none}
+.handle{touch-action:none}.wrap .handle{width:64px;height:64px;border-radius:18px;color:#ffffffb0;margin:-6px -4px -6px 0}.wrap .handle:active{background:var(--glass2)}
 h3{font-size:13px;color:var(--mu);font-weight:600;margin:14px 4px 6px}
 .hint{color:var(--mu);font-size:12.5px;margin:0 4px 10px}
 #toast{position:fixed;left:50%;top:calc(20px + env(safe-area-inset-top));transform:translate(-50%,-30px);background:#fff;color:#07080f;padding:11px 20px;border-radius:99px;font-weight:700;font-size:14px;opacity:0;transition:.28s;z-index:60;pointer-events:none;white-space:nowrap}
@@ -192,7 +192,7 @@ $('#list').onclick=e=>{
   const it=e.target.closest('.item');if(!it)return;const id=it.dataset.id,a=e.target.closest('[data-a]')?.dataset.a;
   if(a==='q'){queue.push(id);toast('Pridané do Ďalej')}
   else if(a==='d')delSong(id);
-  else{queue=view().map(s=>s.id);load(queue.indexOf(id));openPlayer()}
+  else{const k=lib.findIndex(s=>s.id===id);queue=lib.slice(k).concat(lib.slice(0,k)).map(s=>s.id);load(0);openPlayer()}
 };
 async function delSong(id){
   const hid=/^[bd]_/.test(id);if(!confirm(hid?'Skryť skladbu v appke? (súbor v telefóne ostane)':'Zmazať skladbu z appky?'))return;
@@ -303,7 +303,7 @@ function drawQueue(){
   $('#sbody').innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between"><h2>Ďalej</h2><button class="cta g" id="qsh" style="padding:10px 16px;border-radius:14px"><span data-ic="shuffle" data-s="18"></span>Náhodne</button></div>`+
   (now?`<h3>Teraz hrá</h3><div class="item cur">${artH(now)}<div class="meta"><div class="t">${esc(now.title)}</div><div class="s">${esc(now.artist||'')}</div></div><div class="eq"><i></i><i></i><i></i></div></div>`:'')+
   `<h3>Nasleduje · ${up.length}</h3>`+(up.length?`<div class="hint">Potiahni doprava = odstrániť. Potiahni ≡ = zmeniť poradie.</div><div id="ql">`+
-  up.map(id=>{const s=song(id);return`<div class="wrap" data-id="${id}"><div class="item">${artH(s)}<div class="meta"><div class="t">${esc(s.title)}</div><div class="s">${esc(s.artist||'')}</div></div><div class="ib handle">${ic('drag',24)}</div></div></div>`}).join('')+`</div>`:`<div class="hint">Rad je prázdny. Ťukni na ＋ pri skladbe v knižnici.</div>`);
+  up.map(id=>{const s=song(id);return`<div class="wrap" data-id="${id}"><div class="item">${artH(s)}<div class="meta"><div class="t">${esc(s.title)}</div><div class="s">${esc(s.artist||'')}</div></div><div class="ib handle">${ic('drag',28)}</div></div></div>`}).join('')+`</div>`:`<div class="hint">Rad je prázdny. Ťukni na ＋ pri skladbe v knižnici.</div>`);
   $('#qsh').firstElementChild.innerHTML=ic('shuffle',18);$('#qsh').onclick=shuffle;
   document.querySelectorAll('.wrap').forEach(setupRow);
 }
@@ -318,19 +318,34 @@ function setupRow(w){
     else sg.style.transform=''};
   sg.onpointerup=sg.onpointercancel=end;
   sg.onclick=e=>{if(h.contains(e.target)||dx>8)return;const i=queue.indexOf(w.dataset.id,cur+1);if(i>-1)load(i)};
-  h.onpointerdown=e=>{e.preventDefault();h.setPointerCapture(e.pointerId);drag=true;y0=e.clientY;w.style.transition='none';w.classList.add('drag');w.style.transform='scale(1.03)';if(navigator.vibrate)navigator.vibrate(12)};
-  h.onpointermove=e=>{if(!drag)return;const l=w.parentNode;
-    const swap=(sib,before)=>{const a=w.getBoundingClientRect().top,t0=sib.getBoundingClientRect().top;
-      if(before)l.insertBefore(w,sib);else l.insertBefore(sib,w);
-      y0+=w.getBoundingClientRect().top-a;
-      const t1=sib.getBoundingClientRect().top;
-      sib.style.transition='none';sib.style.transform=`translateY(${t0-t1}px)`;sib.getBoundingClientRect();
-      sib.style.transition='transform .26s cubic-bezier(.2,.8,.2,1)';sib.style.transform=''};
-    const r=w.getBoundingClientRect(),c=r.top+r.height/2,pv=w.previousElementSibling,nx=w.nextElementSibling;
-    if(pv){const q=pv.getBoundingClientRect();if(c<q.top+q.height/2)swap(pv,true)}
-    if(nx&&w.nextElementSibling===nx){const q=nx.getBoundingClientRect();if(c>q.top+q.height/2)swap(nx,false)}
-    w.style.transform=`translateY(${e.clientY-y0}px) scale(1.03)`};
-  h.onpointerup=h.onpointercancel=()=>{if(!drag)return;drag=false;
+  let lastY=0,raf=0;const body=$('#sbody');
+  const tf=()=>{w.style.transform=`translateY(${lastY-y0}px) scale(1.03)`};
+  const swap=(sib,before)=>{
+    const wt=w.offsetTop,st=sib.offsetTop,cu=new DOMMatrix(getComputedStyle(sib).transform).m42,l=w.parentNode;
+    if(before)l.insertBefore(w,sib);else l.insertBefore(sib,w);
+    y0+=w.offsetTop-wt;
+    const S=sib.offsetTop-st;
+    sib.style.transition='none';sib.style.transform=`translateY(${cu-S}px)`;sib.getBoundingClientRect();
+    sib.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';sib.style.transform='';
+    tf();
+  };
+  const step=()=>{
+    for(let n=0;n<20;n++){
+      const c=w.offsetTop+w.offsetHeight/2+(lastY-y0),pv=w.previousElementSibling,nx=w.nextElementSibling;
+      if(pv&&c<pv.offsetTop+pv.offsetHeight*.6)swap(pv,true);
+      else if(nx&&c>nx.offsetTop+nx.offsetHeight*.4)swap(nx,false);
+      else break;
+    }
+    tf();
+  };
+  const loop=()=>{if(!drag)return;
+    const r=body.getBoundingClientRect();let v=0;
+    if(lastY<r.top+70)v=-Math.min(18,(r.top+70-lastY)/4);else if(lastY>r.bottom-70)v=Math.min(18,(lastY-(r.bottom-70))/4);
+    if(v){const b=body.scrollTop;body.scrollTop+=v;y0-=body.scrollTop-b;step()}
+    raf=requestAnimationFrame(loop)};
+  h.onpointerdown=e=>{e.preventDefault();h.setPointerCapture(e.pointerId);drag=true;lastY=y0=e.clientY;w.style.transition='none';w.classList.add('drag');tf();if(navigator.vibrate)navigator.vibrate(12);raf=requestAnimationFrame(loop)};
+  h.onpointermove=e=>{if(!drag)return;lastY=e.clientY;step()};
+  h.onpointerup=h.onpointercancel=()=>{if(!drag)return;drag=false;cancelAnimationFrame(raf);
     w.style.transition='transform .24s cubic-bezier(.2,.8,.2,1)';w.style.transform='';
     setTimeout(()=>{w.classList.remove('drag');w.style.transition=''},250);
     queue=queue.slice(0,cur+1).concat([...w.parentNode.children].map(c=>c.dataset.id))};
